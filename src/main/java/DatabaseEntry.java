@@ -1,6 +1,11 @@
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import com.google.gson.stream.JsonWriter;
 
 public class DatabaseEntry {
 
@@ -38,4 +43,19 @@ public class DatabaseEntry {
 				.withString("linktext", linkText);
 		PutItemOutcome outcome = table.putItem(item);
 	}
+	
+	public String createCSVLine() {
+		String line = pageUrl + "," + linkUrl + "," + pageIP + "," + linkText;
+		return line;
+	}
+	
+	public void createJSON(JsonWriter writer) throws IOException {
+		writer.beginObject();
+		writer.name("pageURL").value(pageUrl);
+		writer.name("linkURL").value(linkUrl);
+		writer.name("pageIP").value(pageIP);
+		writer.name("linkText").value(linkText);
+		writer.endObject();
+	}
+
 }
