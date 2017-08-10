@@ -21,7 +21,7 @@ import com.amazonaws.services.s3.model.S3Object;
 public class EC2MainProcess {
 	static String bucketName = "commoncrawl";
 	static ArrayList jsonArray = new ArrayList();
-
+	static String searchURL = "youtube.com";
 
 	public static void main(String[] args) {
 		try {
@@ -90,13 +90,13 @@ public class EC2MainProcess {
 			if (line == null) {
 				break;
 			}
-			System.out.println(line);
+			//System.out.println(line);
 
 			try {
 				JsonElement jelement = new JsonParser().parse(line);
 				if (!jelement.isJsonNull()) {
 					JsonObject jobject = jelement.getAsJsonObject();
-					System.out.println("Created JSON object");
+					//System.out.println("Created JSON object");
 					JsonObject jsonEnvelope = jobject.getAsJsonObject("Envelope");
 					JsonObject jsonPayload = jsonEnvelope.getAsJsonObject("Payload-Metadata");
 					if (jsonPayload != null) {
@@ -104,12 +104,31 @@ public class EC2MainProcess {
 						if (jsonHttp != null) {
 							JsonObject jsonHtml = jsonHttp.getAsJsonObject("HTML-Metadata");
 							if (jsonHtml != null) {
-								System.out.println("Found HTML-Metadata");
+								//System.out.println("Found HTML-Metadata");
 								JsonArray jsonLinks = jsonHtml.getAsJsonArray("Links");
 								if (jsonLinks != null) {
-									System.out.println("Found " + jsonLinks.size() + " links...");
+									//System.out.println("Found " + jsonLinks.size() + " links...");
 									for (int i = 0; i < jsonLinks.size(); i++) {
-										System.out.println(jsonLinks.get(i).getAsJsonObject().getAsJsonPrimitive("url"));
+										String link;
+										JsonPrimitive linkPrimitive = jsonLinks.get(i).getAsJsonObject().getAsJsonPrimitive("url");
+										if (linkPrimitive != null) {
+											link = linkPrimitive.getAsString();
+
+											if (link.contains(searchURL)) {
+
+												String pageURL = jsonEnvelope.getAsJsonObject("WARC-Header-Metadata")
+														.getAsJsonPrimitive("WARC-Target-URI").getAsString();
+
+												String pageIP = jsonEnvelope.getAsJsonObject("WARC-Header-Metadata")
+														.getAsJsonPrimitive("WARC-IP-Address").getAsString();
+												DatabaseEntry dbentry = new DatabaseEntry(pageURL, pageIP, link);
+
+												System.out.println("Found link at: " + pageURL);
+												System.out.println("IP: " + pageIP);
+												System.out.println("Links to: " + link);
+											}
+										}
+										//System.out.println(jsonLinks.get(i).getAsJsonObject().getAsJsonPrimitive("url"));
 									}
 								}
 							}
