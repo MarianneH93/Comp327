@@ -121,7 +121,15 @@ public class EC2MainProcess {
 
 												String pageIP = jsonEnvelope.getAsJsonObject("WARC-Header-Metadata")
 														.getAsJsonPrimitive("WARC-IP-Address").getAsString();
+												
 												DatabaseEntry dbentry = new DatabaseEntry(pageURL, pageIP, link);
+												
+												JsonPrimitive linkTextPrimitive = jsonLinks.get(i).getAsJsonObject().getAsJsonPrimitive("text");
+												if (linkTextPrimitive != null) {
+													dbentry.setLinkText(linkTextPrimitive.getAsString());
+													System.out.println("Link text: " + linkTextPrimitive.getAsString());
+												}
+
 
 												System.out.println("Found link at: " + pageURL);
 												System.out.println("IP: " + pageIP);
